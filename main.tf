@@ -55,6 +55,7 @@ module "alb" {
 
   vpc_id              = module.blog_vpc.vpc_id
   subnets             = module.blog_vpc.public_subnets
+  security_groups     = module.blog_sg.security_group_id
 
 # Security Group
   security_group_ingress_rules = {
@@ -98,7 +99,7 @@ module "alb" {
 
   target_groups = {
     ex-instance = {
-      name_prefix      = "blo_"
+      name_prefix      = "blog-"
       protocol         = "HTTP"
       port             = 80
       target_type      = "instance"
