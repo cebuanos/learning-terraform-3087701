@@ -18,6 +18,7 @@ data "aws_vpc" "default" {
   default = true
 }
 
+#Module Virtual Private Cloud Network
 module "blog_vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -45,6 +46,54 @@ resource "aws_instance" "blog" {
   }
 }
 
+module "alb" {
+  source = "terraform-aws-modules/alb/aws"
+
+  name                = "blog-alb"
+
+  load_balancer_type  = "application"
+
+  vpc_id              = module.blog_vpc.vpc_id
+  subnets              = module.blog_vpc.public_subnets
+  security_groups     = mdoule.blog_sg.security_group_id
+
+  access_logs = {
+    bucket = "my-alb-logs"
+  }
+
+  listeners = {
+    ex-http-https-redirect = {
+      port     = 80
+      protocol = "HTTP"
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+  }
+
+  target_groups = {
+    ex-instance = {
+      name_prefix      = "blo_"
+      protocol         = "HTTP"
+      port             = 80
+      target_type      = "instance"
+      targets = {
+        my_target = {
+          target_id = aws_instance.blog.id
+          port = 80
+        }
+      }
+    }
+  }
+
+  tags = {
+    Environment = "Dev"
+  }
+}
+
+#Module Security Group
 module "blog_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.1.0"
