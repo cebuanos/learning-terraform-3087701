@@ -74,6 +74,7 @@ module "alb" {
       cidr_ipv4   = "0.0.0.0/0"
     }
   }
+
   security_group_egress_rules = {
     all = {
       ip_protocol = "-1"
@@ -97,20 +98,14 @@ module "alb" {
     }
   }
 
-  target_groups = [
-    {
-      name_prefix       = "blog-"
-      backend_protocol  = "HTTP"
-      backend_port      = "80"
-      target_type       = "instance"
-      targets = {
-        my_target = {
-          target_id = aws_instance.blog.id
-          port      = 80
-        }
-      }
+  target_groups = {
+    ex-instance = {
+      name_prefix      = "blog-"
+      protocol         = "HTTP"
+      port             = 80
+      target_type      = "instance"
     }
-  ]
+  }
 
   tags = {
     Environment = "Dev"
